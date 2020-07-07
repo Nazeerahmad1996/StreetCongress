@@ -77,7 +77,6 @@ export default class App extends React.Component {
                     }).catch(function (error) {
                         console.log("Error getting document:", error);
                     });
-                    // this.props.navigation.navigate("UsernameUpdate")
                     this.setState({ name: firebase.auth().currentUser.displayName })
                 }).catch((error) => {
                     console.log(error)

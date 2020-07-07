@@ -5,7 +5,6 @@ import { createStackNavigator } from 'react-navigation-stack';
 import Home from '../Screens/Home';
 import Register from '../Screens/Register';
 import PhoneLogin from '../Screens/PhoneLogin';
-import UsernameUpdate from '../Screens/UsernameUpdate';
 import LeaderBoard from '../Screens/LeaderBoard';
 
 import * as firebase from 'firebase';
@@ -13,9 +12,6 @@ import Loader from '../Screens/Loader'
 
 //After Login Navigator
 const AppStack = createStackNavigator({
-    UsernameUpdate: {
-        screen: UsernameUpdate,
-      },
     Home: {
       screen: Home,
     },
@@ -23,7 +19,7 @@ const AppStack = createStackNavigator({
       screen: LeaderBoard,
     }
 },{
-    initialRouteName: 'UsernameUpdate',
+    initialRouteName: 'Home',
     /* The header config from HomeScreen is now here */
     defaultNavigationOptions: {
       headerStyle: {

@@ -43,7 +43,7 @@ export default function App(props) {
                 <Text style={{ marginTop: 20 }}>Enter phone number</Text>
                 <TextInput
                     style={{ marginVertical: 10, fontSize: 17 }}
-                    placeholder="+1 999 999 9999"
+                    placeholder="999 999 9999"
                     autoFocus
                     autoCompleteType="tel"
                     keyboardType="phone-pad"
@@ -56,10 +56,11 @@ export default function App(props) {
                     disabled={!phoneNumber}
                     onPress={async () => {
                         console.log(phoneNumber)
+                        let number = await  "" + '+1' + phoneNumber.toString();
                         try {
                             const phoneProvider = new firebase.auth.PhoneAuthProvider();
                             const verificationId = await phoneProvider.verifyPhoneNumber(
-                                phoneNumber,
+                                number,
                                 recaptchaVerifier.current
                             );
                             setVerificationId(verificationId).then(res => {
@@ -74,7 +75,6 @@ export default function App(props) {
                                     if (doc.exists) {
                                         
                                     } else {
-                                        // props.navigation.navigate('UsernameUpdate')
                                     }
                                 }).catch(function (error) {
                                     console.log("Error getting document:", error);
@@ -82,7 +82,7 @@ export default function App(props) {
                             });
                             alert("Verification code has been sent to your phone.");
                         } catch (err) {
-                            alert(err);
+                            console.log(err);
                             // showMessage({ text: `Error: ${err.message}`, color: "red" });
                         }
                     }}

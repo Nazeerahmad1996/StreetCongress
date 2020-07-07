@@ -165,15 +165,15 @@ export default class HomeScreen extends React.Component {
         let _this = this;
         this.state.data.forEach(function(item) {
 
-            _this.state.messages.forEach(function(data){
+            _this.state.messages.forEach(function(data, index){
                 if(data.Node == item.Node){
                     firebase.database().ref('Score').child(data.Node).update({
                         Score: score + item.Score,
                     }).then((data) => {
-                        // var Key = data.key
-                        // firebase.database().ref('Score').child(Key).update({
-                        // Node: Key
-                        // })
+                        if(_this.state.messages.length - 1 == index){
+                            Alert.alert('Submited Successful')
+                        }
+                        
                     }).catch((error) => {
                         //error callback
                         console.log(
