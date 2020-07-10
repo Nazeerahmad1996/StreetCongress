@@ -23,7 +23,7 @@ const AppStack = createStackNavigator({
     /* The header config from HomeScreen is now here */
     defaultNavigationOptions: {
       headerStyle: {
-        backgroundColor: '#5d599',
+        // backgroundColor: '#5d599',
       },
       headerTintColor: '#000',
       headerTitleStyle: {
@@ -45,7 +45,7 @@ const AuthStack = createStackNavigator({
     /* The header config from HomeScreen is now here */
     defaultNavigationOptions: {
       headerStyle: {
-        backgroundColor: '#5d599',
+        // backgroundColor: '#5d599',
       },
       headerTintColor: '#000',
       headerTitleStyle: {

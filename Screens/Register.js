@@ -3,18 +3,12 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image, Imag
 import Modal from 'react-native-modal';
 import * as firebase from 'firebase';
 import '@firebase/firestore'
-import * as Linking from 'expo-linking';
-import * as Constants from 'expo-constants';
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import * as Facebook from 'expo-facebook';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-const IOS_CLIENT_ID =
-    "908352193166-dicip2hamrjf6pughcfqc5ri6hgoc4v3.apps.googleusercontent.com";
-const ANDROID_CLIENT_ID =
-    "908352193166-626mcp0t2npfs269pu9lbiov2ae9h76g.apps.googleusercontent.com";
 
 // const recaptchaVerifier = React.useRef(null);
 
@@ -41,8 +35,8 @@ export default class App extends React.Component {
 
 
     FacebooklogIn = async () => {
+        await Facebook.initializeAsync('1442313969294218');
         try {
-            await Facebook.initializeAsync('2060226984224028');
             const {
               type,
               token,
@@ -53,40 +47,66 @@ export default class App extends React.Component {
               permissions: ['public_profile'],
             });
             if (type === 'success') {
-                // Get the user's name using Facebook's Graph API
-                const response = await fetch(
-                    `https://graph.facebook.com/me?access_token=${token}`
-                );
-                const user = await response.json()
-                const credential = firebase.auth.FacebookAuthProvider.credential(token)
-                firebase.auth().signInWithCredential(credential).then((data) => {
-                    console.log(firebase.auth().currentUser)
-                    const db = firebase.firestore();
-                    var userId = firebase.auth().currentUser.uid
-
-                    db.collection("Users").doc(userId).get().then(function (doc) {
-                        if (doc.exists) {
-
-                        } else {
-                            db.collection("Users").doc(userId).set(user).then((data) => {
-                                db.collection("Users").doc(userId).update({
-                                    Score: 0
-                                })
-                            });
-                        }
-                    }).catch(function (error) {
-                        console.log("Error getting document:", error);
-                    });
-                    this.setState({ name: firebase.auth().currentUser.displayName })
-                }).catch((error) => {
-                    console.log(error)
+              // Get the user's name using Facebook's Graph API
+              fetch(`https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,picture.height(500)`)
+                .then(response => response.json())
+                .then(data => {
+                  setLoggedinStatus(true);
+                  setUserData(data);
                 })
+                .catch(e => console.log(e))
             } else {
-                alert(`Facebook Login Error: Cancelled`);
+              // type === 'cancel'
             }
           } catch ({ message }) {
             alert(`Facebook Login Error: ${message}`);
           }
+        // try {
+        //     await Facebook.initializeAsync('1442313969294218');
+        //     const {
+        //       type,
+        //       token,
+        //       expires,
+        //       permissions,
+        //       declinedPermissions,
+        //     } = await Facebook.logInWithReadPermissionsAsync({
+        //       permissions: ['public_profile'],
+        //     });
+        //     if (type === 'success') {
+        //         // Get the user's name using Facebook's Graph API
+        //         const response = await fetch(
+        //             `https://graph.facebook.com/me?access_token=${token}`
+        //         );
+        //         const user = await response.json()
+        //         const credential = firebase.auth.FacebookAuthProvider.credential(token)
+        //         firebase.auth().signInWithCredential(credential).then((data) => {
+        //             console.log(firebase.auth().currentUser)
+        //             const db = firebase.firestore();
+        //             var userId = firebase.auth().currentUser.uid
+
+        //             db.collection("Users").doc(userId).get().then(function (doc) {
+        //                 if (doc.exists) {
+
+        //                 } else {
+        //                     db.collection("Users").doc(userId).set(user).then((data) => {
+        //                         db.collection("Users").doc(userId).update({
+        //                             Score: 0
+        //                         })
+        //                     });
+        //                 }
+        //             }).catch(function (error) {
+        //                 console.log("Error getting document:", error);
+        //             });
+        //             this.setState({ name: firebase.auth().currentUser.displayName })
+        //         }).catch((error) => {
+        //             console.log(error)
+        //         })
+        //     } else {
+        //         alert(`Facebook Login Error: Cancelled`);
+        //     }
+        //   } catch ({ message }) {
+        //     alert(`Facebook Login Error: ${message}`);
+        //   }
     }
 
     renderModalHelp = () => (

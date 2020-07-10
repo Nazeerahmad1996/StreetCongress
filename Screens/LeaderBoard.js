@@ -13,12 +13,23 @@ import Leaderboard from 'react-native-leaderboard';
 export default class HomeScreen extends React.Component {
 
 
+    constructor(props) {
+        super(props)
+        this.state = {
+            TotalVotes: 0,
+            data: [
+
+            ]
+        }
+    }
+
+
     static navigationOptions = ({ navigation }) => ({
         title: 'Scoreboard',
         headerStyle: {
-            backgroundColor: '#5d599',
+            // backgroundColor: '#5d599',
           },
-          headerTintColor: '#5d599',
+        //   headerTintColor: '#5d599',
           headerTitleStyle: {
             fontWeight: 'bold',
             textAlign:'center'
@@ -35,14 +46,6 @@ export default class HomeScreen extends React.Component {
           )
       });
 
-    constructor(props) {
-        super(props)
-        this.state = {
-            data: [
-
-            ]
-        }
-    }
 
 
     async getDate() {
@@ -50,9 +53,11 @@ export default class HomeScreen extends React.Component {
         return snapshot.docs.map(doc => doc.data());
     }
 
-
     async componentDidMount() {
         let that = this;
+        await firebase.database().ref('Submitted').once('value').then(function(snapshot) {
+            that.setState({TotalVotes: snapshot.numChildren()})
+          });
         firebase
             .database()
             .ref('Score')
@@ -76,28 +81,13 @@ export default class HomeScreen extends React.Component {
     }
 
 
-    renderItem = ({ item, index }) => {
-        console.log(item)
-
-        return (
-            <View style={{ padding: 10, marginLeft: 40, backgroundColor: '#fff', marginBottom: 20, marginRight: 20, borderRadius: 10, flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: '#f9f9f9', justifyContent: 'center', alignItems: 'center', marginLeft: -35, marginRight: 20 }}>
-                    <Text style={{ fontSize: 8 }}>Score</Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item.Score}</Text>
-                </View>
-                <Text>{index + 1}.  </Text>
-                <Text>{item.label}  </Text>
-            </View>
-
-        )
-    }
-
 
 
 
     render() {
         return (
             <View style={styles.container}>
+                <Text style={{textAlign:'center',fontSize:16,marginVertical:8}}>Total Votes: {this.state.TotalVotes}</Text>
                 <Leaderboard
                     data={this.state.data}
                     sortBy='Score'

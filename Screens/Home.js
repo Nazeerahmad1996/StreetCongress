@@ -6,6 +6,7 @@ import Modal from 'react-native-modal';
 
 import DraggableFlatList from "react-native-draggable-flatlist";
 
+import * as Sharing from 'expo-sharing';
 
 import * as firebase from 'firebase';
 import '@firebase/firestore'
@@ -28,24 +29,23 @@ export default class HomeScreen extends React.Component {
     static navigationOptions = ({ navigation }) => ({
         title: 'Home',
         headerStyle: {
-            backgroundColor: '#5d599',
-          },
-          headerTintColor: '#5d599',
-          headerTitleStyle: {
+        },
+        // headerTintColor: '#5d599',
+        headerTitleStyle: {
             fontWeight: 'bold',
-            textAlign:'center'
-          },
+            textAlign: 'center'
+        },
         headerRight: () => (
-            <TouchableOpacity style={{marginRight:15}} onPress={() => firebase.auth().signOut()}>
+            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => firebase.auth().signOut()}>
                 <MaterialCommunityIcons name='logout' color='grey' size={26} />
             </TouchableOpacity>
-          ),
-          headerLeft: () => (
-            <TouchableOpacity style={{marginLeft:15}} onPress={() => navigation.navigate('LeaderBoard')}>
-                <Image source={require('../assets/scoreboard.png')} style={{width:26,height:26}} />
+        ),
+        headerLeft: () => (
+            <TouchableOpacity style={{ marginLeft: 15 }} onPress={() => navigation.navigate('LeaderBoard')}>
+                <Image source={require('../assets/scoreboard.png')} style={{ width: 26, height: 26 }} />
             </TouchableOpacity>
-          )
-      });
+        )
+    });
 
     state = {
         logged: false,
@@ -53,12 +53,43 @@ export default class HomeScreen extends React.Component {
         Post: false,
         Description: '',
         messages: [],
-        data: []
+        data: [],
+        help: false,
+
     }
+
+    onShare = async () => {
+        let url = 'www.google.com'
+        try {
+            const result = await Share.share({
+                message:
+                    'React Native | A framework for building native apps using React ' + url,
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                } else {
+                    // shared
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    };
 
 
 
     async componentDidMount() {
+        let user = firebase.auth().currentUser.uid
+        let _this = this
+        await firebase.database().ref('Submitted').child(user).on("value", snapshot => {
+            if (snapshot.val() && snapshot.val().user == user) {
+                _this.setState({ help: true })
+            }
+
+        });
         firebase
             .database()
             .ref('Score')
@@ -70,110 +101,29 @@ export default class HomeScreen extends React.Component {
                     Object
                         .keys(data)
                         .forEach(message => initMessages.push(data[message]));
-                    this.setState({ messages: initMessages, data: initMessages })
+                    this.setState({ messages: initMessages, data: initMessages }, ()=> console.log(this.state.data))
                 }
             });
     }
 
-
-    // Post = async () => {
-    //     var user = firebase.auth().currentUser.uid;
-
-    //     let userName;
-    //     var docRef = firebase.firestore().collection("Users").doc(user);
-
-    //     await docRef.get().then(function (doc) {
-    //         if (doc.exists) {
-    //             userName = doc.data().username
-    //             console.log("Document data:", doc.data().username);
-    //         } else {
-    //             userName = 'Anonymous'
-    //             // doc.data() will be undefined in this case
-    //             console.log("5No such document!");
-    //         }
-    //     }).catch(function (error) {
-    //         console.log("Error getting document:", error);
-    //     });
-    //     var nodeName = 'Post';
-
-    //     if (this.state.Description != '') {
-
-    //         var newPostRef = firebase.database().ref(nodeName).push({
-    //             User: user,
-    //             Name: userName,
-    //             Description: this.state.Description,
-    //             Date: new Date().toDateString(),
-    //             Node: "null",
-    //             Likes: 0,
-    //         }).then((data) => {
-    //             this.setState({ Description: '' })
-    //             this.setState({ Post: false })
-    //             Alert.alert(
-    //                 'Upload Successfully'
-    //             )
-    //             var Key = data.key
-    //             firebase.database().ref(nodeName).child(Key).update({
-    //                 Node: Key
-    //             })
-    //             let score = 0
-    //             let that = this;
-    //             firebase.firestore().collection("Users").doc(user).get().then(function (doc) {
-    //                 if (doc.exists) {
-    //                     console.log('worl: ', doc.data().Score)
-    //                     firebase.firestore().collection("Users").doc(user).update({
-    //                         Score: doc.data().Score + 10
-    //                     })
-    //                 } else {
-    //                     firebase.firestore().collection("Users").doc("gorilla").get().then(function (doc) {
-    //                         if (doc.exists) {
-    //                             console.log('wor5: ', doc.data().Score)
-    //                             firebase.firestore().collection("Users").doc("gorilla").update({
-    //                                 Score: doc.data().Score + 10
-    //                             })
-    //                         } else {
-    //                             console.log("6No such document!");
-    //                         }
-    //                     }).catch(function (error) {
-    //                         console.log("2Error getting document:", error);
-    //                     });
-    //                     console.log("1No such document!");
-    //                 }
-    //             }).catch(function (error) {
-    //                 console.log("2Error getting document:", error);
-    //             });
-
-    //         }).catch((error) => {
-    //             //error callback
-    //             Alert.alert(
-    //                 'Upload Not Successfully' + error
-    //             )
-    //         })
-    //     }
-
-    //     else {
-    //         Alert.alert("Please Fill The Form Proper.")
-    //     }
-    // }
-
     submit = () => {
         let score = this.state.data.length
-        // firebase.database().ref('Score').push(this.state.data).then((data) => {
-
-        // }).catch((err) => {
-        //     console.log('error', err)
-        // })
+        let user = firebase.auth().currentUser.uid
         let _this = this;
-        this.state.data.forEach(function(item) {
+        this.state.data.forEach(function (item) {
 
-            _this.state.messages.forEach(function(data, index){
-                if(data.Node == item.Node){
+            _this.state.messages.forEach(function (data, index) {
+                if (data.Node == item.Node) {
                     firebase.database().ref('Score').child(data.Node).update({
                         Score: score + item.Score,
                     }).then((data) => {
-                        if(_this.state.messages.length - 1 == index){
-                            Alert.alert('Submited Successful')
+                        if (_this.state.messages.length - 1 == index) {
+                            _this.setState({ help: true })
+                            firebase.database().ref('Submitted').child(user).set({
+                                user: user,
+                            })
                         }
-                        
+
                     }).catch((error) => {
                         //error callback
                         console.log(
@@ -186,53 +136,108 @@ export default class HomeScreen extends React.Component {
         });
     }
 
+    renderModalHelp = () => (
+        <View style={styles.modalView}>
+            <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>Submitted</Text>
+
+            <Text style={{ textAlign: 'center', fontWeight: 'bold', flex: 1, marginBottom: 10 }}>You casted your vote</Text>
+
+            <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => { this.onShare() }}>
+                <MaterialCommunityIcons name='share-variant' color='grey' size={26} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+                this.setState({ help: false })
+                this.props.navigation.navigate('LeaderBoard')
+            }
+            }>
+                <Text style={{ fontWeight: 'bold' }}>View Score</Text>
+            </TouchableOpacity>
+
+        </View >
+    );
+
 
     renderItem = ({ item, index, drag, isActive }) => {
         return (
-          <TouchableOpacity
-            style={{
-              height: 42,
-              backgroundColor: isActive ? "blue" : '#b58b8b',
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius:5,
-              marginVertical:8
-            }}
-            onLongPress={drag}
-          >
-            <Text
-              style={{
-                fontWeight: "bold",
-                color: "white",
-                fontSize: 18
-              }}
+            <TouchableOpacity
+                style={{
+                    height: 42,
+                    backgroundColor: isActive ? "blue" : '#b58b8b',
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 5,
+                    marginVertical: 8
+                }}
+                onLongPress={drag}
             >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
+                <Text
+                    style={{
+                        fontWeight: "bold",
+                        color: "white",
+                        fontSize: 18
+                    }}
+                >
+                    {item.label}
+                </Text>
+            </TouchableOpacity>
         );
-      };
+    };
 
     render() {
         var userId = firebase.auth().currentUser.uid
         return (
-            <View style={{flex:1, marginHorizontal:25}}>
-                <Text style={{ fontSize: 20, textAlign:'center' }}>Press item and drag accordingly</Text>
-                <DraggableFlatList
-                    showsVerticalScrollIndicator={false}
-                    data={this.state.data}
-                    renderItem={this.renderItem}
-                    keyExtractor={(item, index) => index.toString()}
-                    onDragEnd={({ data }) => this.setState({ data })}
-                />
-                <TouchableOpacity style={{ backgroundColor:'#685353',paddingVertical:8, marginTop:20 }} onPress={this.submit}>
-                    <Text style={{
-                    fontWeight: "bold",
-                    color: "white",
-                    textAlign:'center',
-                    fontSize: 20
-                    }}>Submit</Text>
-                </TouchableOpacity>
+            <View style={{ flex: 1, marginHorizontal: 25 }}>
+                {this.state.help ? (
+                    <View style={styles.modalView}>
+                        <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>Submitted</Text>
+
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', flex: 1, marginBottom: 10 }}>You casted your vote</Text>
+
+                        <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => { this.onShare() }}>
+                            <MaterialCommunityIcons name='share-variant' color='grey' size={26} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {
+                            this.props.navigation.navigate('LeaderBoard')
+                        }
+                        }>
+                            <Text style={{ fontWeight: 'bold' }}>View Score</Text>
+                        </TouchableOpacity>
+
+                    </View >
+                ) : (
+                        <View style={{flex:1}}>
+                            <Text style={{ fontSize: 20, textAlign: 'center' }}>Press item and drag accordingly</Text>
+                            {/* <Modal
+                                isVisible={this.state.help}
+                                backdropColor="rgba(0,0,0,1)"
+                                animationIn="zoomInDown"
+                                animationOut="zoomOutUp"
+                                animationInTiming={600}
+                                animationOutTiming={600}
+                                backdropTransitionInTiming={600}
+                                backdropTransitionOutTiming={600}
+                                // onBackdropPress={() => this.setState({ help: false })}
+                                style={{ overflow: 'scroll' }}>
+                                {this.renderModalHelp()}
+                            </Modal> */}
+                            <DraggableFlatList
+                                showsVerticalScrollIndicator={false}
+                                data={this.state.data}
+                                renderItem={this.renderItem}
+                                keyExtractor={(item, index) => index.toString()}
+                                onDragEnd={({ data }) => this.setState({ data })}
+                            />
+                            <TouchableOpacity style={{ backgroundColor: '#685353', paddingVertical: 8, marginTop: 20 }} onPress={this.submit}>
+                                <Text style={{
+                                    fontWeight: "bold",
+                                    color: "white",
+                                    textAlign: 'center',
+                                    fontSize: 20
+                                }}>Submit</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
             </View>
         )
     }
@@ -256,13 +261,15 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20
     },
     modalView: {
+        flex:1,
         width: '95%',
         borderRadius: 10,
         alignSelf: 'center',
         backgroundColor: 'white',
         paddingVertical: 20,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginVertical:20
     },
     inputView: {
         width: "80%",
