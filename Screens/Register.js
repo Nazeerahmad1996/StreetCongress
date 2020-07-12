@@ -35,8 +35,8 @@ export default class App extends React.Component {
 
 
     FacebooklogIn = async () => {
-        await Facebook.initializeAsync('1442313969294218');
         try {
+            await Facebook.initializeAsync('1442313969294218');
             const {
               type,
               token,
@@ -47,66 +47,40 @@ export default class App extends React.Component {
               permissions: ['public_profile'],
             });
             if (type === 'success') {
-              // Get the user's name using Facebook's Graph API
-              fetch(`https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,picture.height(500)`)
-                .then(response => response.json())
-                .then(data => {
-                  setLoggedinStatus(true);
-                  setUserData(data);
+                // Get the user's name using Facebook's Graph API
+                const response = await fetch(
+                    `https://graph.facebook.com/me?access_token=${token}`
+                );
+                const user = await response.json()
+                const credential = firebase.auth.FacebookAuthProvider.credential(token)
+                firebase.auth().signInWithCredential(credential).then((data) => {
+                    console.log(firebase.auth().currentUser)
+                    const db = firebase.firestore();
+                    var userId = firebase.auth().currentUser.uid
+
+                    db.collection("Users").doc(userId).get().then(function (doc) {
+                        if (doc.exists) {
+
+                        } else {
+                            db.collection("Users").doc(userId).set(user).then((data) => {
+                                db.collection("Users").doc(userId).update({
+                                    Score: 0
+                                })
+                            });
+                        }
+                    }).catch(function (error) {
+                        console.log("Error getting document:", error);
+                    });
+                    this.setState({ name: firebase.auth().currentUser.displayName })
+                }).catch((error) => {
+                    console.log(error)
                 })
-                .catch(e => console.log(e))
             } else {
-              // type === 'cancel'
+                alert(`Facebook Login Error: Cancelled`);
             }
           } catch ({ message }) {
             alert(`Facebook Login Error: ${message}`);
           }
-        // try {
-        //     await Facebook.initializeAsync('1442313969294218');
-        //     const {
-        //       type,
-        //       token,
-        //       expires,
-        //       permissions,
-        //       declinedPermissions,
-        //     } = await Facebook.logInWithReadPermissionsAsync({
-        //       permissions: ['public_profile'],
-        //     });
-        //     if (type === 'success') {
-        //         // Get the user's name using Facebook's Graph API
-        //         const response = await fetch(
-        //             `https://graph.facebook.com/me?access_token=${token}`
-        //         );
-        //         const user = await response.json()
-        //         const credential = firebase.auth.FacebookAuthProvider.credential(token)
-        //         firebase.auth().signInWithCredential(credential).then((data) => {
-        //             console.log(firebase.auth().currentUser)
-        //             const db = firebase.firestore();
-        //             var userId = firebase.auth().currentUser.uid
-
-        //             db.collection("Users").doc(userId).get().then(function (doc) {
-        //                 if (doc.exists) {
-
-        //                 } else {
-        //                     db.collection("Users").doc(userId).set(user).then((data) => {
-        //                         db.collection("Users").doc(userId).update({
-        //                             Score: 0
-        //                         })
-        //                     });
-        //                 }
-        //             }).catch(function (error) {
-        //                 console.log("Error getting document:", error);
-        //             });
-        //             this.setState({ name: firebase.auth().currentUser.displayName })
-        //         }).catch((error) => {
-        //             console.log(error)
-        //         })
-        //     } else {
-        //         alert(`Facebook Login Error: Cancelled`);
-        //     }
-        //   } catch ({ message }) {
-        //     alert(`Facebook Login Error: ${message}`);
-        //   }
     }
 
     renderModalHelp = () => (
