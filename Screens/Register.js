@@ -36,7 +36,7 @@ export default class App extends React.Component {
 
     FacebooklogIn = async () => {
         try {
-            await Facebook.initializeAsync('1442313969294218');
+            await Facebook.initializeAsync('2060226984224028');
             const {
               type,
               token,
