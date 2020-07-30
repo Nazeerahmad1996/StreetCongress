@@ -28,9 +28,10 @@ export default function CustomDrawer(props) {
       .collection("Users")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((doc) => {
-        if (doc.data().gotPointsForLinkShare) {
-          skipReferral();
-        }
+        if (doc.exists && doc.data())
+          if (doc.data().gotPointsForLinkShare) {
+            skipReferral();
+          }
       });
   };
 
@@ -40,7 +41,7 @@ export default function CustomDrawer(props) {
       .collection("Users")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((doc) => {
-        if (doc.data().isSuperUser) setSuperUser(true);
+        if (doc.exists) if (doc.data().isSuperUser) setSuperUser(true);
       });
   };
 
