@@ -15,9 +15,9 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Linking from "expo-linking";
 import Modal from "react-native-modal";
 
-import * as Permissions from 'expo-permissions';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import * as Permissions from "expo-permissions";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import DraggableFlatList from "react-native-draggable-flatlist";
 
 import * as Sharing from "expo-sharing";
@@ -99,31 +99,34 @@ export default class HomeScreen extends React.Component {
   };
 
   registerForPushNotifications = async () => {
-
     let token;
     if (Constants.isDevice) {
-      const { status: existingStatus } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
       let finalStatus = existingStatus;
-      console.log('-===--', finalStatus)
-      if (existingStatus !== 'granted') {
-        const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      console.log("-===--", finalStatus);
+      if (existingStatus !== "granted") {
+        const { status } = await Permissions.askAsync(
+          Permissions.NOTIFICATIONS
+        );
         finalStatus = status;
       }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
         return;
       }
       token = (await Notifications.getExpoPushTokenAsync()).data;
       console.log(token);
     } else {
-      alert('Must use physical device for Push Notifications');
+      alert("Must use physical device for Push Notifications");
     }
-    if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+        lightColor: "#FF231F7C",
       });
     }
 
@@ -174,18 +177,19 @@ export default class HomeScreen extends React.Component {
 
   async componentDidMount() {
     let token = await this.registerForPushNotifications();
-    console.log('--=================token============-----', token)
+    console.log("--=================token============-----", token);
     let user = firebase.auth().currentUser.uid;
-
     const db = firebase.firestore();
     let that = this;
     db.collection("Users")
       .doc(user)
-      .set({
-        token: token
-      }, { merge: true })
-      .then((data) => {
-      });
+      .set(
+        {
+          token: token,
+        },
+        { merge: true }
+      )
+      .then((data) => {});
 
     let _this = this;
     await firebase
@@ -365,11 +369,11 @@ export default class HomeScreen extends React.Component {
             </TouchableOpacity>
           </View>
         ) : (
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 20, textAlign: "center" }}>
-                Press item and drag accordingly
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 20, textAlign: "center" }}>
+              Press item and drag accordingly
             </Text>
-              {/* <Modal
+            {/* <Modal
                                 isVisible={this.state.help}
                                 backdropColor="rgba(0,0,0,1)"
                                 animationIn="zoomInDown"
@@ -382,34 +386,34 @@ export default class HomeScreen extends React.Component {
                                 style={{ overflow: 'scroll' }}>
                                 {this.renderModalHelp()}
                             </Modal> */}
-              <DraggableFlatList
-                showsVerticalScrollIndicator={false}
-                data={this.state.data}
-                renderItem={this.renderItem}
-                keyExtractor={(item, index) => index.toString()}
-                onDragEnd={({ data }) => this.setState({ data })}
-              />
-              <TouchableOpacity
+            <DraggableFlatList
+              showsVerticalScrollIndicator={false}
+              data={this.state.data}
+              renderItem={this.renderItem}
+              keyExtractor={(item, index) => index.toString()}
+              onDragEnd={({ data }) => this.setState({ data })}
+            />
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#685353",
+                paddingVertical: 8,
+                marginTop: 20,
+              }}
+              onPress={this.submit}
+            >
+              <Text
                 style={{
-                  backgroundColor: "#685353",
-                  paddingVertical: 8,
-                  marginTop: 20,
+                  fontWeight: "bold",
+                  color: "white",
+                  textAlign: "center",
+                  fontSize: 20,
                 }}
-                onPress={this.submit}
               >
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "white",
-                    textAlign: "center",
-                    fontSize: 20,
-                  }}
-                >
-                  Submit
+                Submit
               </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   }
