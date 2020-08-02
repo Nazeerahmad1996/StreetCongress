@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "StreetCongress",
+    "scheme": "streetcongress",
     "slug": "StreetCongress",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,7 +16,9 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.TechArtists.StreetCongress",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "package": "com.TechArtists.StreetCongress",
