@@ -25,7 +25,7 @@ export default class AppPreLoader extends Component {
                 .firestore()
                 .collection("Users")
                 .doc(user.uid)
-                .update({ gotPointsForLinkShare: false });
+                .set({ gotPointsForLinkShare: false });
           });
 
       this.props.navigation.navigate(user ? "App" : "Auth");

@@ -40,15 +40,6 @@ export default function App(props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#f7f2f2' }}>
-                <TouchableOpacity
-                    onPress={() => props.navigation.goBack()}
-                    style={{ padding: 8, backgroundColor: '#4863A0', width: 60, height: 50, justifyContent: 'center', alignItems: 'center' }}>
-                    <Ionicons name='md-arrow-back' color='#fff' size={35} />
-                </TouchableOpacity>
-                <Text style={{ flex: 1, textAlign: 'center', fontSize: 20, fontWeight: 'bold' }}>Phone Login</Text>
-                <View style={{ width: 60 }} />
-            </View> */}
       <View style={{ margin: 20 }}>
         <FirebaseRecaptchaVerifierModal
           ref={recaptchaVerifier}
