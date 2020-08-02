@@ -8,6 +8,7 @@ import {
   Alert,
   Clipboard,
   SafeAreaView,
+  ActivityIndicator
 } from "react-native";
 import firebase from "firebase";
 import "@firebase/firestore";
@@ -30,14 +31,16 @@ export default class UserNameUpdate extends React.Component {
     super(props);
     this.state = {
       username: null,
-      check: false,
+      check: true,
     };
   }
 
-  componentWillMount = async () => {
+
+  componentDidMount = async () => {
     let checkAuth = false;
     var user = firebase.auth().currentUser.uid;
     const db = firebase.firestore();
+    let _this = this
     await db
       .collection("Users")
       .doc(user)
@@ -45,6 +48,7 @@ export default class UserNameUpdate extends React.Component {
       .then(function (doc) {
         let that = this;
         if (doc.exists) {
+          console.log('-----data----', doc.data())
           let username = doc.data().username;
           if (doc.data().Score) {
             Score = false;
@@ -57,37 +61,30 @@ export default class UserNameUpdate extends React.Component {
         } else {
           console.log("No such document!");
         }
+        _this.setState({ check: false })
       })
       .catch(function (error) {
+        _this.setState({ check: false })
         console.log("Error getting document:", error);
       });
-    if (checkAuth) {
-      //     const resetAction = .reset({
-      //         index: 1,
-      //         actions: [
-      //           NavigationActions.navigate({ routeName: 'Home' }),
-      //           NavigationActions.navigate({ routeName: 'Login' })
-      //         ]
-      //       });
-      //       this.props.navigation.dispatch(resetAction);
-      //   }
-    }
-  };
 
-  componentDidMount() {
     firebase
       .firestore()
       .collection("Users")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((doc) => {
-        if (doc.data().username) {
-          const resetAction = StackActions.reset({
-            index: 0,
-            actions: [NavigationActions.navigate({ routeName: "Home" })],
-          });
-          this.props.navigation.dispatch(resetAction);
+        console.log('-----data----', doc.data())
+        if (doc.exists) {
+          if (doc.data().username) {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: "Home" })],
+            });
+            this.props.navigation.dispatch(resetAction);
+          }
         }
       });
+
   }
 
   Update = async () => {
@@ -147,6 +144,13 @@ export default class UserNameUpdate extends React.Component {
   };
 
   render() {
+    if (this.state.check) {
+      return (
+        <View style={{flex:1, justifyContent: 'center', alignItems:'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      )
+    }
     return (
       <View style={styles.container}>
         <Text style={styles.logo}>Update Username</Text>

@@ -20,12 +20,16 @@ export default class AppPreLoader extends Component {
           .collection("Users")
           .doc(user.uid)
           .onSnapshot((doc) => {
-            if (!doc.data().gotPointsForLinkShare)
-              firebase
-                .firestore()
-                .collection("Users")
-                .doc(user.uid)
-                .set({ gotPointsForLinkShare: false });
+            if (!doc) {
+              if (!doc.data().gotPointsForLinkShare) {
+                firebase
+                  .firestore()
+                  .collection("Users")
+                  .doc(user.uid)
+                  .set({ gotPointsForLinkShare: false });
+              }
+            }
+
           });
 
       this.props.navigation.navigate(user ? "App" : "Auth");
