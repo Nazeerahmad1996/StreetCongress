@@ -73,7 +73,6 @@ export default class UserNameUpdate extends React.Component {
       .collection("Users")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((doc) => {
-        console.log('-----data----', doc.data())
         if (doc.exists) {
           if (doc.data().username) {
             const resetAction = StackActions.reset({

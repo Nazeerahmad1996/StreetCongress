@@ -26,7 +26,7 @@ export default class AppPreLoader extends Component {
                   .firestore()
                   .collection("Users")
                   .doc(user.uid)
-                  .set({ gotPointsForLinkShare: false });
+                  .set({ gotPointsForLinkShare: false }, { merge: true });
               }
             }
 
