@@ -45,7 +45,10 @@ export default class UserNameUpdate extends React.Component {
       .then(function (doc) {
         let that = this;
         if (doc.exists) {
-          let username = doc.data().username;
+          let username = null;
+          if (doc.data()) {
+            username = doc.data().username;
+          }
           if (doc.data().Score) {
             Score = false;
           }
@@ -80,7 +83,7 @@ export default class UserNameUpdate extends React.Component {
       .collection("Users")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((doc) => {
-        if (doc.data().username) {
+        if (doc.data()) {
           const resetAction = StackActions.reset({
             index: 0,
             actions: [NavigationActions.navigate({ routeName: "Home" })],
