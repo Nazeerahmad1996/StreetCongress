@@ -99,6 +99,7 @@ export default class HomeScreen extends React.Component {
   };
 
   registerForPushNotifications = async () => {
+    let user = firebase.auth().currentUser.uid;
     let token;
     if (Constants.isDevice) {
       const { status: existingStatus } = await Permissions.getAsync(
@@ -117,6 +118,17 @@ export default class HomeScreen extends React.Component {
         return;
       }
       token = (await Notifications.getExpoPushTokenAsync()).data;
+      const db = firebase.firestore();
+        db.collection("Users")
+          .doc(user)
+          .set(
+            {
+              token: token ? token : '',
+            },
+            { merge: true }
+          )
+          .then((data) => { });
+
       console.log(token);
     } else {
       alert("Must use physical device for Push Notifications");
@@ -177,26 +189,14 @@ export default class HomeScreen extends React.Component {
 
   async componentDidMount() {
     let token = await this.registerForPushNotifications();
-    console.log("--=================token============-----", token);
     let user = firebase.auth().currentUser.uid;
-    const db = firebase.firestore();
-    let that = this;
-    db.collection("Users")
-      .doc(user)
-      .set(
-        {
-          token: token,
-        },
-        { merge: true }
-      )
-      .then((data) => {});
 
     let _this = this;
     await firebase
       .database()
       .ref("Submitted")
       .child(user)
-      .on("value", (snapshot) => {
+      .once("value", (snapshot) => {
         if (snapshot.val() && snapshot.val().user == user) {
           _this.setState({ help: true });
         }
@@ -204,7 +204,7 @@ export default class HomeScreen extends React.Component {
     firebase
       .database()
       .ref("Score")
-      .on("value", (snapshot) => {
+      .once("value", (snapshot) => {
         const data = snapshot.val();
         const count = snapshot.numChildren();
         if (snapshot.val()) {
@@ -369,11 +369,11 @@ export default class HomeScreen extends React.Component {
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 20, textAlign: "center" }}>
-              Press item and drag accordingly
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 20, textAlign: "center" }}>
+                Press item and drag accordingly
             </Text>
-            {/* <Modal
+              {/* <Modal
                                 isVisible={this.state.help}
                                 backdropColor="rgba(0,0,0,1)"
                                 animationIn="zoomInDown"
@@ -386,34 +386,34 @@ export default class HomeScreen extends React.Component {
                                 style={{ overflow: 'scroll' }}>
                                 {this.renderModalHelp()}
                             </Modal> */}
-            <DraggableFlatList
-              showsVerticalScrollIndicator={false}
-              data={this.state.data}
-              renderItem={this.renderItem}
-              keyExtractor={(item, index) => index.toString()}
-              onDragEnd={({ data }) => this.setState({ data })}
-            />
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#685353",
-                paddingVertical: 8,
-                marginTop: 20,
-              }}
-              onPress={this.submit}
-            >
-              <Text
+              <DraggableFlatList
+                showsVerticalScrollIndicator={false}
+                data={this.state.data}
+                renderItem={this.renderItem}
+                keyExtractor={(item, index) => index.toString()}
+                onDragEnd={({ data }) => this.setState({ data })}
+              />
+              <TouchableOpacity
                 style={{
-                  fontWeight: "bold",
-                  color: "white",
-                  textAlign: "center",
-                  fontSize: 20,
+                  backgroundColor: "#685353",
+                  paddingVertical: 8,
+                  marginTop: 20,
                 }}
+                onPress={this.submit}
               >
-                Submit
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "white",
+                    textAlign: "center",
+                    fontSize: 20,
+                  }}
+                >
+                  Submit
               </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+              </TouchableOpacity>
+            </View>
+          )}
       </View>
     );
   }
