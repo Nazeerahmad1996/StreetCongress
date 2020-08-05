@@ -26,7 +26,7 @@ export class UserRankings extends Component {
         </Text>
         <Leaderboard
           data={this.state.data}
-          sortBy={"score"}
+          sortBy={"Score"}
           labelBy={"username"}
         />
       </View>

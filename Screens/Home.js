@@ -13,6 +13,8 @@ import {
   SafeAreaView
 } from "react-native";
 
+import * as Linking from "expo-linking";
+
 const { width, height } = Dimensions.get("screen");
 
 import * as Permissions from "expo-permissions";
@@ -62,16 +64,17 @@ export default class HomeScreen extends React.Component {
     Description: "",
     messages: [],
     data: [],
-    help: false
+    help: false,
+    numberOfVotes: 0,
+    userRank: null
   };
 
   onShare = async () => {
-    let url = "www.google.com";
+    var userId = firebase.auth().currentUser.uid;
+    let url = Linking.makeUrl("", { uid: userId });
     try {
       const result = await Share.share({
-        message:
-          "React Native | A framework for building native apps using React " +
-          url
+        message: url
       });
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
@@ -176,6 +179,17 @@ export default class HomeScreen extends React.Component {
     // return token;
   };
 
+  getNumberOfVotersForCurrentUser = async () => {
+    const userID = firebase.auth().currentUser.uid;
+    const userData = await firebase
+      .firestore()
+      .collection("Users")
+      .doc(userID)
+      .get();
+    const numberOfVotes = userData.data().votes ? userData.data().votes : 0;
+    this.setState({ numberOfVotes });
+  };
+
   async componentDidMount() {
     let token = await this.registerForPushNotifications();
     let user = firebase.auth().currentUser.uid;
@@ -206,6 +220,9 @@ export default class HomeScreen extends React.Component {
           );
         }
       });
+
+    this.getNumberOfVotersForCurrentUser();
+    this.getCurrentUsersRank();
   }
 
   componentDidUpdate() {
@@ -244,6 +261,21 @@ export default class HomeScreen extends React.Component {
       });
       score = score - 1;
     });
+  };
+
+  getCurrentUsersRank = async () => {
+    const userID = firebase.auth().currentUser.uid;
+
+    const userData = await firebase
+      .firestore()
+      .collection("Users")
+      .orderBy("Score", "desc")
+      .get();
+
+    const currentUserRank = userData.docs.findIndex(
+      (user) => user.id === userID
+    );
+    this.setState({ userRank: currentUserRank + 1 });
   };
 
   renderModalHelp = () => (
@@ -345,25 +377,123 @@ export default class HomeScreen extends React.Component {
                 You casted your vote
               </Text>
 
-              <TouchableOpacity
-                style={{ marginBottom: 10 }}
-                onPress={() => {
-                  this.onShare();
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  alignItems: "center",
+                  zIndex: -10
                 }}
               >
-                <MaterialCommunityIcons
-                  name="share-variant"
-                  color="grey"
-                  size={26}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  this.props.navigation.navigate("LeaderBoard");
-                }}
-              >
-                <Text style={{ fontWeight: "bold" }}>View Score</Text>
-              </TouchableOpacity>
+                <View style={{ flexDirection: "row", marginTop: height / 4 }}>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      alignItems: "center",
+                      borderColor: "#aaa",
+                      borderWidth: 0.7,
+                      padding: 5
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: 18,
+                        color: "#555"
+                      }}
+                    >
+                      Voters Gained
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      alignItems: "center",
+                      borderColor: "#aaa",
+                      borderWidth: 0.7,
+                      padding: 5
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#000",
+                        fontWeight: "bold",
+                        fontSize: 18
+                      }}
+                    >
+                      {this.state.numberOfVotes}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginVertical: 20, flexDirection: "row" }}>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      alignItems: "center",
+                      borderColor: "#aaa",
+                      borderWidth: 0.7,
+                      padding: 5
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: 18,
+                        color: "#555"
+                      }}
+                    >
+                      User Rank
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      alignItems: "center",
+                      borderColor: "#aaa",
+                      borderWidth: 0.7,
+                      padding: 5
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#000",
+                        fontWeight: "bold",
+                        fontSize: 18
+                      }}
+                    >
+                      {this.state.userRank}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: "row", marginVertical: 50 }}>
+                  <TouchableOpacity
+                    style={{ flex: 0.5, alignItems: "center" }}
+                    onPress={() => {
+                      this.props.navigation.navigate("LeaderBoard");
+                    }}
+                  >
+                    <Image
+                      source={require("../assets/scoreboard.png")}
+                      style={{ width: 26, height: 26 }}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ flex: 0.5, alignItems: "center" }}
+                    onPress={() => {
+                      this.onShare();
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="share-variant"
+                      color="grey"
+                      size={26}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           ) : (
             <View style={{ flex: 1 }}>

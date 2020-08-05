@@ -20,13 +20,13 @@ export const Header = ({ navigation, title, homeBtnDisabled }) => (
       <View style={{ flex: 0.5, alignItems: "center" }}>
         <TouchableOpacity
           disabled={homeBtnDisabled}
-          onPress={() => navigation.navigate("Home")}
+          onPress={() => navigation.openDrawer()}
         >
           <Ionicons name="md-home" size={26} />
         </TouchableOpacity>
       </View>
       <View style={{ flex: 0.5, alignItems: "center" }}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <FontAwesome5 name="clipboard-list" size={26} />
         </TouchableOpacity>
       </View>
