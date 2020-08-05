@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Dimensions, Alert } from "react-native";
 import { View, Text } from "react-native";
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
-import firebase from "firebase";
+import firebase, { firestore } from "firebase";
 import { StackActions, NavigationActions } from "react-navigation";
 const { width, height } = Dimensions.get("window");
 import * as Permissions from "expo-permissions";
@@ -10,41 +10,74 @@ import * as Notifications from "expo-notifications";
 
 const SendAlertsScreen = (props) => {
   const [message, setMessage] = useState(null);
+  const [title, setTitle] = useState(null);
+
+  const saveNotificationToFireStore = () => {
+    return new Promise((resolve, reject) => {
+      const docRef = firebase.firestore().collection("Users");
+      docRef
+        .get()
+        .then((response) => {
+          response.docs.map((doc) => {
+            doc.ref.set(
+              {
+                notifications: doc.data().notifications
+                  ? [
+                      ...doc.data().notifications,
+                      { id: Date.now(), title, message }
+                    ]
+                  : [{ id: Date.now(), title, message }]
+              },
+              { merge: true }
+            );
+
+            resolve(true);
+          });
+        })
+        .catch((err) => reject(err));
+    });
+  };
 
   const sendNotificationsToEveryone = async () => {
     if (message) {
-      firebase
-        .firestore()
-        .collection("Users")
-        .onSnapshot((querySnapshot) => {
-          querySnapshot.forEach((data) => {
-            console.log(data.data())
-            if (data.exists) {
+      await saveNotificationToFireStore().then(() => {
+        firebase
+          .firestore()
+          .collection("Users")
+          .onSnapshot((querySnapshot) => {
+            querySnapshot.docs.map(async (doc) => {
               let response = fetch("https://exp.host/--/api/v2/push/send", {
                 method: "POST",
                 headers: {
                   Accept: "application/json",
-                  "Content-Type": "application/json",
+                  "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                  to: data.data().token,
+                  to: doc.data().token,
                   sound: "default",
-                  title: "Street Congress",
-                  body: message,
-                }),
+                  title: title ? title : "Street Congress",
+                  body: message
+                })
               });
-            }
+            });
           });
-        });
-    }else{
-      alert('text is empty')
+      });
+    } else {
+      alert("text is empty");
     }
-
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.mainView}>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Title</Text>
+          <TextInput
+            style={[styles.input, { height: 50, padding: 10 }]}
+            placeholder="Message Title Goes Here..."
+            onChangeText={(text) => setTitle(text)}
+          />
+        </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Your Message</Text>
           <TextInput
@@ -68,20 +101,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    alignItems: "center",
+    alignItems: "center"
   },
   mainView: {
     width,
     justifyContent: "flex-start",
     paddingVertical: height / 8,
     alignItems: "center",
-    height: height / 1.3,
+    height: height / 1.3
   },
-  inputContainer: {},
+  inputContainer: {
+    shadowColor: "#ccc",
+    shadowOffset: {
+      width: 5,
+      height: 5
+    },
+    shadowOpacity: 0.7
+  },
   label: {
     fontSize: 12,
     fontWeight: "300",
-    marginLeft: 5,
+    marginLeft: 5
   },
   input: {
     fontSize: 16,
@@ -92,13 +132,7 @@ const styles = StyleSheet.create({
     overflow: "scroll",
     marginVertical: 10,
     width: width / 1.1,
-    borderRadius: 20,
-    shadowOffset: {
-      width: 8,
-      height: 8,
-    },
-    shadowOpacity: 1.35,
-    shadowColor: "#ccc",
+    borderRadius: 5
   },
   button: {
     width: width / 2.2,
@@ -107,13 +141,13 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#ff5762",
     borderRadius: 5,
-    marginVertical: 25,
+    marginVertical: 25
   },
   buttonText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "white",
-  },
+    color: "white"
+  }
 });
 
 export default SendAlertsScreen;

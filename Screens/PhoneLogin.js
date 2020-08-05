@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar,
-  Alert,
+  Alert
 } from "react-native";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import * as firebase from "firebase";
@@ -21,7 +21,7 @@ var firebaseConfig = {
   projectId: "streetcongress-c6ece",
   storageBucket: "streetcongress-c6ece.appspot.com",
   messagingSenderId: "788694505026",
-  appId: "1:788694505026:web:b0fe674e67beec357bbfdb",
+  appId: "1:788694505026:web:b0fe674e67beec357bbfdb"
 };
 
 export default function App(props) {
@@ -33,10 +33,21 @@ export default function App(props) {
     !firebaseConfig || Platform.OS === "web"
       ? {
           text:
-            "To get started, provide a valid firebase config in App.js and open this snack on an iOS or Android device.",
+            "To get started, provide a valid firebase config in App.js and open this snack on an iOS or Android device."
         }
       : undefined
   );
+
+  const savePhoneNumberToFireStoreAsync = async (userID) => {
+    await firebase
+      .firestore()
+      .collection("Users")
+      .doc(userID)
+      .set({ phoneNumber: phoneNumber }, { merge: true })
+      .catch((err) => {
+        throw err;
+      });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -112,6 +123,11 @@ export default function App(props) {
                 verificationCode
               );
               await firebase.auth().signInWithCredential(credential);
+
+              const userID = firebase.auth().currentUser.uid;
+
+              await savePhoneNumberToFireStoreAsync(userID);
+
               showMessage({ text: "Phone authentication successful 👍" });
               // props.navigation.navigate("UsernameUpdate")
             } catch (err) {
@@ -123,7 +139,7 @@ export default function App(props) {
           <TouchableOpacity
             style={[
               StyleSheet.absoluteFill,
-              { backgroundColor: 0xffffffee, justifyContent: "center" },
+              { backgroundColor: 0xffffffee, justifyContent: "center" }
             ]}
             onPress={() => showMessage(undefined)}
           >
@@ -132,7 +148,7 @@ export default function App(props) {
                 color: message.color || "blue",
                 fontSize: 17,
                 textAlign: "center",
-                margin: 20,
+                margin: 20
               }}
             >
               {message.text}

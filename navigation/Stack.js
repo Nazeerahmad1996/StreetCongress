@@ -7,6 +7,7 @@ import PhoneLogin from "../Screens/PhoneLogin";
 import LeaderBoard from "../Screens/LeaderBoard";
 import UserNameUpdate from "../Screens/UsernameUpdate";
 import SendAlertsScreen from "../Screens/SendAlertsScreen";
+import { Notifications } from "../Screens/Notifications";
 
 import firebase from "firebase";
 
@@ -15,16 +16,24 @@ export const AppStack = createStackNavigator(
   {
     Username: {
       screen: UserNameUpdate,
+      navigationOptions: { header: null }
     },
     Home: {
       screen: Home,
+      navigationOptions: { header: null }
     },
     LeaderBoard: {
       screen: LeaderBoard,
+      navigationOptions: { header: null }
     },
     SendAlertsScreen: {
       screen: SendAlertsScreen,
+      navigationOptions: { header: null }
     },
+    Notifications: {
+      screen: Notifications,
+      navigationOptions: { header: null }
+    }
   },
   {
     initialRouteName: "Username",
@@ -35,9 +44,9 @@ export const AppStack = createStackNavigator(
       },
       headerTintColor: "#000",
       headerTitleStyle: {
-        fontWeight: "bold",
-      },
-    },
+        fontWeight: "bold"
+      }
+    }
   }
 );
 
@@ -45,11 +54,11 @@ export const AppStack = createStackNavigator(
 export const AuthStack = createStackNavigator(
   {
     Register: {
-      screen: Register,
+      screen: Register
     },
     PhoneLogin: {
-      screen: PhoneLogin,
-    },
+      screen: PhoneLogin
+    }
   },
   {
     initialRouteName: "Register",
@@ -60,8 +69,8 @@ export const AuthStack = createStackNavigator(
       },
       headerTintColor: "#000",
       headerTitleStyle: {
-        fontWeight: "bold",
-      },
-    },
+        fontWeight: "bold"
+      }
+    }
   }
 );

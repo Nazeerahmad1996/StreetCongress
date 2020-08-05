@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   TextInput,
@@ -10,31 +10,20 @@ import {
   View,
   Image,
   Platform,
+  SafeAreaView
 } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import * as Linking from "expo-linking";
-import Modal from "react-native-modal";
+
+const { width, height } = Dimensions.get("screen");
 
 import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import DraggableFlatList from "react-native-draggable-flatlist";
 
-import * as Sharing from "expo-sharing";
-
 import * as firebase from "firebase";
 import "@firebase/firestore";
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
-// const exampleData = [...Array(10)].map((d, index) => ({
-//     key: `item-${index}`, // For example only -- don't use index as your key!
-//     label: index,
-//     name: First,
-//     backgroundColor: `rgb(${Math.floor(Math.random() * 255)}, ${index *
-//       5}, ${132})`
-//   }));
+import { Header } from "../components/Header";
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
@@ -43,7 +32,7 @@ export default class HomeScreen extends React.Component {
     // headerTintColor: '#5d599',
     headerTitleStyle: {
       fontWeight: "bold",
-      textAlign: "center",
+      textAlign: "center"
     },
     headerRight: () => (
       <TouchableOpacity
@@ -63,7 +52,7 @@ export default class HomeScreen extends React.Component {
           style={{ width: 26, height: 26 }}
         />
       </TouchableOpacity>
-    ),
+    )
   });
 
   state = {
@@ -73,7 +62,7 @@ export default class HomeScreen extends React.Component {
     Description: "",
     messages: [],
     data: [],
-    help: false,
+    help: false
   };
 
   onShare = async () => {
@@ -82,7 +71,7 @@ export default class HomeScreen extends React.Component {
       const result = await Share.share({
         message:
           "React Native | A framework for building native apps using React " +
-          url,
+          url
       });
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
@@ -119,15 +108,15 @@ export default class HomeScreen extends React.Component {
       }
       token = (await Notifications.getExpoPushTokenAsync()).data;
       const db = firebase.firestore();
-        db.collection("Users")
-          .doc(user)
-          .set(
-            {
-              token: token ? token : '',
-            },
-            { merge: true }
-          )
-          .then((data) => { });
+      db.collection("Users")
+        .doc(user)
+        .set(
+          {
+            token: token ? token : ""
+          },
+          { merge: true }
+        )
+        .then((data) => {});
 
       console.log(token);
     } else {
@@ -138,7 +127,7 @@ export default class HomeScreen extends React.Component {
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
+        lightColor: "#FF231F7C"
       });
     }
 
@@ -219,6 +208,12 @@ export default class HomeScreen extends React.Component {
       });
   }
 
+  componentDidUpdate() {
+    if (this.state.help) {
+      this.props.navigation.navigate("LeaderBoard");
+    }
+  }
+
   submit = () => {
     let score = this.state.data.length;
     let user = firebase.auth().currentUser.uid;
@@ -231,13 +226,13 @@ export default class HomeScreen extends React.Component {
             .ref("Score")
             .child(data.Node)
             .update({
-              Score: score + item.Score,
+              Score: score + item.Score
             })
             .then((data) => {
               if (_this.state.messages.length - 1 == index) {
                 _this.setState({ help: true });
                 firebase.database().ref("Submitted").child(user).set({
-                  user: user,
+                  user: user
                 });
               }
             })
@@ -258,7 +253,7 @@ export default class HomeScreen extends React.Component {
           textAlign: "center",
           fontSize: 22,
           fontWeight: "bold",
-          marginBottom: 15,
+          marginBottom: 15
         }}
       >
         Submitted
@@ -269,7 +264,7 @@ export default class HomeScreen extends React.Component {
           textAlign: "center",
           fontWeight: "bold",
           flex: 1,
-          marginBottom: 10,
+          marginBottom: 10
         }}
       >
         You casted your vote
@@ -303,7 +298,7 @@ export default class HomeScreen extends React.Component {
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 5,
-          marginVertical: 8,
+          marginVertical: 8
         }}
         onLongPress={drag}
       >
@@ -311,7 +306,7 @@ export default class HomeScreen extends React.Component {
           style={{
             fontWeight: "bold",
             color: "white",
-            fontSize: 18,
+            fontSize: 18
           }}
         >
           {item.label}
@@ -323,56 +318,58 @@ export default class HomeScreen extends React.Component {
   render() {
     var userId = firebase.auth().currentUser.uid;
     return (
-      <View style={{ flex: 1, marginHorizontal: 25 }}>
-        {this.state.help ? (
-          <View style={styles.modalView}>
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize: 22,
-                fontWeight: "bold",
-                marginBottom: 15,
-              }}
-            >
-              Submitted
-            </Text>
+      <SafeAreaView style={{ width, height }}>
+        <Header navigation={this.props.navigation} title="Home" />
+        <View style={{ flex: 1, marginHorizontal: 25 }}>
+          {this.state.help ? (
+            <View style={styles.modalView}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  marginBottom: 15
+                }}
+              >
+                Submitted
+              </Text>
 
-            <Text
-              style={{
-                textAlign: "center",
-                fontWeight: "bold",
-                flex: 1,
-                marginBottom: 10,
-              }}
-            >
-              You casted your vote
-            </Text>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  flex: 1,
+                  marginBottom: 10
+                }}
+              >
+                You casted your vote
+              </Text>
 
-            <TouchableOpacity
-              style={{ marginBottom: 10 }}
-              onPress={() => {
-                this.onShare();
-              }}
-            >
-              <MaterialCommunityIcons
-                name="share-variant"
-                color="grey"
-                size={26}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                this.props.navigation.navigate("LeaderBoard");
-              }}
-            >
-              <Text style={{ fontWeight: "bold" }}>View Score</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
+              <TouchableOpacity
+                style={{ marginBottom: 10 }}
+                onPress={() => {
+                  this.onShare();
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="share-variant"
+                  color="grey"
+                  size={26}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  this.props.navigation.navigate("LeaderBoard");
+                }}
+              >
+                <Text style={{ fontWeight: "bold" }}>View Score</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 20, textAlign: "center" }}>
                 Press item and drag accordingly
-            </Text>
+              </Text>
               {/* <Modal
                                 isVisible={this.state.help}
                                 backdropColor="rgba(0,0,0,1)"
@@ -397,7 +394,7 @@ export default class HomeScreen extends React.Component {
                 style={{
                   backgroundColor: "#685353",
                   paddingVertical: 8,
-                  marginTop: 20,
+                  marginTop: 20
                 }}
                 onPress={this.submit}
               >
@@ -406,32 +403,29 @@ export default class HomeScreen extends React.Component {
                     fontWeight: "bold",
                     color: "white",
                     textAlign: "center",
-                    fontSize: 20,
+                    fontSize: 20
                   }}
                 >
                   Submit
-              </Text>
+                </Text>
               </TouchableOpacity>
             </View>
           )}
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 }
 
-// HomeScreen.navigationOptions = {
-//     header: null,
-// };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#fff"
   },
   Title: {
     fontSize: 30,
     fontWeight: "bold",
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
   modalView: {
     flex: 1,
@@ -442,7 +436,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 20
   },
   inputView: {
     width: "80%",
@@ -451,11 +445,11 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 20,
     justifyContent: "center",
-    padding: 20,
+    padding: 20
   },
   inputText: {
     height: 50,
-    color: "white",
+    color: "white"
   },
   forgotBtn: {
     width: "80%",
@@ -464,6 +458,6 @@ const styles = StyleSheet.create({
     height: 50,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
-  },
+    marginBottom: 10
+  }
 });
