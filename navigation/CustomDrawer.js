@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Clipboard,
-  Alert,
+  Alert
 } from "react-native";
 import * as firebase from "firebase";
 import * as Linking from "expo-linking";
@@ -74,28 +74,22 @@ export default function CustomDrawer(props) {
   };
 
   const givePointsToProvidedUsername = async () => {
-    await getUserID().then((user) => {
-      firebase
-        .firestore()
-        .collection("Users")
-        .doc(user.id)
-        .update({ Score: currentScoreOfProvidedUser + 50 })
-        .then(async () => {
-          await getCurrentUserInfo().then((currentUser) => {
-            firebase
-              .firestore()
-              .collection("Users")
-              .doc(firebase.auth().currentUser.uid)
-              .update({
-                Score: currentUser.data.Score + 20,
-                gotPointsForLinkShare: true,
-              })
-              .then(() => {
-                Alert.alert(`Congrats!`, `You are rewarded with 20 points`);
-              });
-          });
-        });
-    });
+    const user = await getUserID();
+    const userData = await firebase
+      .firestore()
+      .collection("Users")
+      .doc(user.id)
+      .get();
+
+    userData.ref
+      .set(
+        {
+          Score: currentScoreOfProvidedUser + 50,
+          voters: userData.data().voters ? userData.data().voters + 1 : 1
+        },
+        { merge: true }
+      )
+      .then(() => Alert.alert(`Congrats, You are rewarded with 20 points`));
   };
 
   const verifyUsername = () => {
@@ -127,7 +121,7 @@ export default function CustomDrawer(props) {
         {
           text: "Cancel",
           onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
+          style: "cancel"
         },
         {
           text: "Yes",
@@ -147,8 +141,8 @@ export default function CustomDrawer(props) {
                 SignOut();
                 console.log(error);
               });
-          },
-        },
+          }
+        }
       ],
       { cancelable: false }
     );
@@ -215,7 +209,7 @@ export default function CustomDrawer(props) {
           height: 200,
           justifyContent: "center",
           alignItems: "center",
-          marginBottom: 20,
+          marginBottom: 20
         }}
       >
         <Text style={{ color: "#fff", fontWeight: "bold", marginVertical: 10 }}>
@@ -237,7 +231,7 @@ export default function CustomDrawer(props) {
               color: "#fff",
               fontSize: 16,
               fontWeight: "bold",
-              textDecorationLine: "underline",
+              textDecorationLine: "underline"
             }}
           >
             Copy Link
@@ -256,7 +250,7 @@ export default function CustomDrawer(props) {
             onPress={() => handleSubmit()}
             style={[
               styles.Row,
-              { backgroundColor: "#4863A0", marginVertical: 5 },
+              { backgroundColor: "#4863A0", marginVertical: 5 }
             ]}
           >
             <Text
@@ -264,7 +258,7 @@ export default function CustomDrawer(props) {
                 fontSize: 16,
                 textAlign: "center",
                 padding: 8,
-                color: "#fff",
+                color: "#fff"
               }}
             >
               SUBMIT
@@ -273,14 +267,20 @@ export default function CustomDrawer(props) {
         </View>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => props.navigation.navigate("Home")}
+          onPress={() => {
+            props.navigation.closeDrawer();
+            props.navigation.navigate("Home");
+          }}
         >
           <Text style={styles.buttonText}>Home</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => props.navigation.navigate("LeaderBoard")}
+          onPress={() => {
+            props.navigation.closeDrawer();
+            props.navigation.navigate("LeaderBoard");
+          }}
         >
           <Text style={styles.buttonText}>Leaderboard</Text>
         </TouchableOpacity>
@@ -307,7 +307,7 @@ export default function CustomDrawer(props) {
             fontSize: 16,
             textAlign: "center",
             padding: 10,
-            color: "#fff",
+            color: "#fff"
           }}
         >
           Logout
@@ -320,7 +320,7 @@ export default function CustomDrawer(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#000"
   },
   input: {
     backgroundColor: "#fff",
@@ -328,23 +328,23 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     textAlign: "center",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   buttonText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#fff"
   },
   Title: {
     fontSize: 26,
     fontWeight: "bold",
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
   Row: {
     width: "100%",
-    backgroundColor: "#ff5762",
+    backgroundColor: "#ff5762"
   },
   button: {
-    paddingVertical: 20,
-  },
+    paddingVertical: 20
+  }
 });
