@@ -289,6 +289,7 @@ export default function CustomDrawer(props) {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
+              props.navigation.closeDrawer();
               props.navigation.navigate("SendAlertsScreen");
             }}
           >
